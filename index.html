@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style type="text/css">
+			html,
+			body {
+				background-color: #eeeeee;
+			}
+
+			img {
+				width: 500px;
+			}
+		</style>
+	</head>
+	<body>
+		显示文字<input type="" name="" id="ipt" value="" placeholder="没有输入文字" />
+		<br>
+		显示文字颜色<input type="" name="" id="clr" value="" placeholder="#000000" />
+		<br>
+		背景颜色<input type="" name="" id="bgc" value="" placeholder="不设置就是透明背景" />
+		<br>
+		<button type="button" id="btn">create</button>
+		<br>
+		<br>
+		<br>
+		<br>
+		<img src="" id="img">
+		<script type="text/javascript">
+			var ipt = document.getElementById("ipt");
+			var clr = document.getElementById("clr");
+			var bgc = document.getElementById("bgc");
+			var btn = document.getElementById("btn");
+			var img = document.getElementById("img");
+			btn.onclick = function() {
+				var _value = ipt.value;
+				var _color = clr.value;
+				var _bgclr = bgc.value;
+				img.setAttribute("src", textToImg(_value, _color, _bgclr));
+			}
+			const textToImg = (val, color, bgclr) => {
+				if (!val) val = "没有输入文字";
+				if (!color) color = "#000000";
+				var len = 12; /*文字长度*/
+				var i = 0;
+				var fontSize = 200; /*文字大小*/
+				var fontWeight = 'normal'; /*normal正常;bold粗*/
+				var txt = val;
+				var canvas = document.createElement("canvas");
+				if (txt == '') {
+					alert('请输入文字！');
+				}
+				if (len > txt.length) {
+					len = txt.length;
+				}
+				canvas.width = fontSize * len;
+				canvas.height = fontSize * (3 / 2) *
+					(Math.ceil(txt.length / len) + txt.split('\n').length - 1);
+				var context = canvas.getContext('2d');
+				if(bgclr){
+					context.fillStyle = bgclr;
+					context.clearRect(0, 0, canvas.width, canvas.height);
+				}
+				context.font = fontWeight + ' ' + fontSize + 'px 微软雅黑';
+				context.textBaseline = 'top';
+				canvas.style.display = 'none';
+				//console.log(txt.length);
+				function fillTxt(text) {
+					while (text.length > len) {
+						var txtLine = text.substring(0, len);
+						text = text.substring(len);
+						context.fillText(txtLine, 0, fontSize * (3 / 2) * i++,
+							canvas.width);
+					}
+					context.fillText(text, 0, fontSize * (3 / 2) * i, canvas.width);
+				}
+				var txtArray = txt.split('\n');
+				for (var j = 0; j < txtArray.length; j++) {
+					context.fillStyle = color;
+					fillTxt(txtArray[j]);
+					context.fillText('\n', 0, fontSize * (3 / 2) * i++, canvas.width);
+				}
+
+				const rgba = [255, 255, 255, 255];
+				const tolerance = 60;
+				const [r0, g0, b0, a0] = rgba;
+				var r, g, b, a;
+				const w = canvas.width;
+				const h = canvas.height;
+
+				let imgData = context.getImageData(0, 0, w, h);
+
+				for (let i = 0; i < imgData.data.length; i += 4) {
+					r = imgData.data[i];
+					g = imgData.data[i + 1];
+					b = imgData.data[i + 2];
+					a = imgData.data[i + 3];
+					const t = Math.sqrt((r - r0) ** 2 + (g - g0) ** 2 + (b - b0) ** 2 + (a - a0) ** 2);
+					if (t <= tolerance) {
+						imgData.data[i] = 0;
+						imgData.data[i + 1] = 0;
+						imgData.data[i + 2] = 0;
+						imgData.data[i + 3] = 0;
+					}
+				}
+				context.putImageData(imgData, 0, 0);
+
+				return canvas.toDataURL("image/png");
+			}
+		</script>
+	</body>
+</html>
